@@ -47,6 +47,23 @@ public class Main {
                     throw new UnsupportedOperationException("Cannot divide by zero");
                 }
                 return a / b;
+            case '~':
+                return -a;
+        }
+        return 0;
+    }
+
+
+    public static int getPriority(char operator) {
+        switch (operator) {
+            case '*':
+            case '/':
+                return 2;
+            case '+':
+            case '-':
+                return 1;
+            case '~':
+                return 3;
         }
         return 0;
     }
@@ -54,15 +71,13 @@ public class Main {
     public static double evaluateExpression(String expr) {
         Stack<Double> values = new Stack<>();
         Stack<Character> operators = new Stack<>();
-
+        int unaryMinusCount = 0;
         for (int i = 0; i < expr.length(); i++) {
             char c = expr.charAt(i);
 
             if (c == ' ') continue;
 
-            if (c == '(') {
-                operators.push(c);
-            } else if (Character.isDigit(c) || c == '.') {
+            if (Character.isDigit(c) || c == '.') {
                 StringBuilder sb = new StringBuilder();
                 while (i < expr.length() && (Character.isDigit(expr.charAt(i)) || expr.charAt(i) == '.')) {
                     sb.append(expr.charAt(i));
@@ -70,26 +85,46 @@ public class Main {
                 }
                 i--;
                 values.push(Double.parseDouble(sb.toString()));
+                if (unaryMinusCount > 0) {
+                    for (int j = 0; j < unaryMinusCount; j++) {
+                        values.push(values.pop() * -1);
+                    }
+                    unaryMinusCount = 0;
+                }
+            } else if (c == '(') {
+                operators.push(c);
+                if (unaryMinusCount > 0) {
+                    unaryMinusCount = 0;
+                }
+            } else if (c == ')') {
+                while (operators.peek() != '(') {
+                    double val2 = values.pop();
+                    double val1 =values.pop();
+                    char op = operators.pop();
+                    values.push(performOperation(op, val1, val2));
+                }
+                operators.pop();
+                if (unaryMinusCount > 0) {
+                    for (int j = 0; j < unaryMinusCount; j++) {
+                        values.push(values.pop() * -1);
+                    }
+                    unaryMinusCount = 0;
+                }
+            } else if (c == '~') {
+                unaryMinusCount++;
             } else if (isOperator(c)) {
-                while (!operators.isEmpty() && isOperator(operators.peek())) {
+                while (!operators.isEmpty() && isOperator(operators.peek()) && getPriority(c) <= getPriority(operators.peek())) {
                     double val2 = values.pop();
                     double val1 = values.pop();
                     char op = operators.pop();
                     values.push(performOperation(op, val1, val2));
                 }
                 operators.push(c);
-            } else if (c == ')') {
-                while (operators.peek() != '(') {
-                    double val2 = values.pop();
-                    double val1 = values.pop();
-                    char op = operators.pop();
-                    values.push(performOperation(op, val1, val2));
+                if (unaryMinusCount > 0) {
+                    unaryMinusCount = 0;
                 }
-                operators.pop();
             }
-        }
-
-        while (!operators.isEmpty()) {
+        }    while (!operators.isEmpty()) {
             double val2 = values.pop();
             double val1 = values.pop();
             char op = operators.pop();
@@ -98,6 +133,9 @@ public class Main {
 
         return values.pop();
     }
+
+
+
 
 
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidAlgorithmParameterException, InvalidKeyException {
