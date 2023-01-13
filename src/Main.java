@@ -15,11 +15,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 public class Main {
 
-    private static boolean isOperator(char c) {
+    public static boolean isOperator(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/';
     }
 
-    private static boolean isValidExpression(String expr) {
+    public static boolean isValidExpression(String expr) {
         Stack<Character> stack = new Stack<>();
         for (int i = 0; i < expr.length(); i++) {
             char c = expr.charAt(i);
@@ -34,7 +34,7 @@ public class Main {
         return stack.isEmpty();
     }
 
-    private static double performOperation(char operator, double a, double b) {
+    public static double performOperation(char operator, double a, double b) {
         switch (operator) {
             case '+':
                 return a + b;
@@ -51,7 +51,7 @@ public class Main {
         return 0;
     }
 
-    private static double evaluateExpression(String expr) {
+    public static double evaluateExpression(String expr) {
         Stack<Double> values = new Stack<>();
         Stack<Character> operators = new Stack<>();
 
